@@ -26,7 +26,7 @@ from huggingface_hub.utils import EntryNotFoundError, RepositoryNotFoundError, R
 from requests import HTTPError
 
 from . import __version__
-from .hub_utils import send_telemetry
+from .hub_utils import HF_HUB_OFFLINE
 from .utils import (
     CONFIG_NAME,
     DIFFUSERS_CACHE,
@@ -377,7 +377,7 @@ class ModelMixin(torch.nn.Module):
         resume_download = kwargs.pop("resume_download", False)
         proxies = kwargs.pop("proxies", None)
         output_loading_info = kwargs.pop("output_loading_info", False)
-        local_files_only = kwargs.pop("local_files_only", False)
+        local_files_only = kwargs.pop("local_files_only", HF_HUB_OFFLINE)
         use_auth_token = kwargs.pop("use_auth_token", None)
         revision = kwargs.pop("revision", None)
         torch_dtype = kwargs.pop("torch_dtype", None)
@@ -594,10 +594,6 @@ class ModelMixin(torch.nn.Module):
                 raise EnvironmentError(
                     f"Error no file named {weights_name} found in directory {pretrained_model_name_or_path}."
                 )
-            send_telemetry(
-                {"model_class": cls.__name__, "model_path": "local", "framework": "pytorch"},
-                name="diffusers_from_pretrained",
-            )
             return model_file
         else:
             try:
@@ -614,10 +610,6 @@ class ModelMixin(torch.nn.Module):
                     user_agent=user_agent,
                     subfolder=subfolder,
                     revision=revision,
-                )
-                send_telemetry(
-                    {"model_class": cls.__name__, "model_path": "hub", "framework": "pytorch"},
-                    name="diffusers_from_pretrained",
                 )
                 return model_file
 
